@@ -20,7 +20,34 @@
   Color should be set differently for each polygon.
   ====================*/
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
+  double x0, y0, z0, x1, y1, z1, x2, y2, z2;
+  x0 = points->m[0][i];   y0 = points->m[1][i];   z0 = points->m[2][i];
+  x1 = points->m[0][i+1]; y1 = points->m[1][i+1]; z1 = points->m[2][i+1];
+  x2 = points->m[0][i+2]; y2 = points->m[1][i+2]; z2 = points->m[2][i+2];
+  double
+    xt = x0, yt = y0,
+    xb = x0, yb = y0,
+    xm = x0, ym = y0;
+  // top
+  if ( y1 > yt ) { xt = x1; yt = y1; }
+  if ( y2 > yt ) { xt = x2; yt = y2; }
+  // bottom
+  if ( y1 < yb ) { xb = x1; yb = y1; }
+  if ( y2 < yb ) { xb = x2; yb = y2; }
+  // middle
+  if ( y1 != yt || y1 != yb ) { xm = x1; ym = y1; }
+  else if ( y2 != yt || y2 != yb ) { xm = x2; ym = y2; }
 
+  double
+    d0 = (xt - xb) / (yt - yb),
+    d1 = (xm - xb) / (ym - yb);
+  x0 = xb; x1 = xb;
+  for ( int y = 0 ; y <= (yt - yb) ; y++ ) {
+    if ( y == ym ) d1 = (xt - xm) / (yt-ym);
+    draw_line(x0, y, 0, x1, y, 0, s, zb, c); // fix for z values
+    x0 += d0;
+    x1 += d1;
+  }
 }
 
 /*======== void add_polygon() ==========
