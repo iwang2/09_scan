@@ -61,7 +61,7 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zbuff, co
   x0 = xb;
   int y;
   for ( y = yb ; y < yt ; y++ ) {    
-    if ( y == ym ) {
+    if ( y == (int)ym ) {
       d1 = ( xm - xt ) / ( ym - yt );
       x1 = xm;
     }
@@ -110,7 +110,6 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
     printf("Need at least 3 points to draw a polygon!\n");
     return;
   }
-
   int point;
   double *normal;
   color clr;
