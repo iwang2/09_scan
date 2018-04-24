@@ -31,4 +31,5 @@ run: all
 	./main script
 
 clean:
+	rm main
 	rm *.o *~

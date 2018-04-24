@@ -19,49 +19,54 @@
 
   Color should be set differently for each polygon.
   ====================*/
-void scanline_convert( struct matrix *points, int i, screen s, zbuffer zbuff ) {
-  double x0, y0, z0, x1, y1, z1, x2, y2, z2;
-  x0 = points->m[0][i];   y0 = points->m[1][i];   z0 = points->m[2][i];
-  x1 = points->m[0][i+1]; y1 = points->m[1][i+1]; z1 = points->m[2][i+1];
-  x2 = points->m[0][i+2]; y2 = points->m[1][i+2]; z2 = points->m[2][i+2];
+void scanline_convert( struct matrix *points, int i, screen s, zbuffer zbuff, color c ) {
+  double
+    x0 = points->m[0][i],
+    y0 = points->m[1][i],
+    z0 = points->m[2][i],
+    x1 = points->m[0][i+1],
+    y1 = points->m[1][i+1],
+    z1 = points->m[2][i+1],
+    x2 = points->m[0][i+2],
+    y2 = points->m[1][i+2],
+    z2 = points->m[2][i+2];
   double
     xt = x0, yt = y0, zt = z0,
     xb = x0, yb = y0, zb = z0,
     xm = x0, ym = y0, zm = z0;
+  int zero = 0, one = 0, two = 0; // booleans
   // top
-  if ( y1 > yt ) { xt = x1; yt = y1; zt = z1; }
-  if ( y2 > yt ) { xt = x2; yt = y2; zt = z2; }
+  if ( y1 > yt && y1 > y2 )
+    { xt = x1; yt = y1; zt = z1; one = 1; }
+  else if ( y2 > yt )
+    { xt = x2; yt = y2; zt = z2; two = 1; }
+  else zero = 1;
   // bottom
-  if ( y1 < yb ) { xb = x1; yb = y1; zb = z1; }
-  if ( y2 < yb ) { xb = x2; yb = y2; zb = z2; }
+  if ( y1 < yb && y1 < y2 )
+    { xb = x1; yb = y1; zb = z1; one = 1; }
+  else if ( y2 < yb )
+    { xb = x2; yb = y2; zb = z2; two = 1; }
+  else zero = 1;
   // middle
-  if ( y1 != yt || y1 != yb ) { xm = x1; ym = y1; zm = z1; }
-  else if ( y2 != yt || y2 != yb ) { xm = x2; ym = y2; zm = z2; }
+  if ( !zero ) { xm = x0; ym = y0; zm = z0; }
+  else if ( !one ) { xm = x1; ym = y1; zm = z1; }
+  else { xm = x2; ym = y2; zm = z2; }
 
-  double d0, d1;
-  int tb = 0; // boolean: top to bottom?
-  d0 = ( xt - xb ) / ( yt - yb );
-  if ( ym - yb == 0 ) {
-    d1 = ( xm - yt ) / ( ym - yt );
-    x0 = xt; x1 = xt;
-  }
-  else {
+  double d0 = ( xt - xb ) / ( yt - yb );
+  double d1; 
+  if ( ym - yb != 0 ) {
     d1 = ( xm - xb ) / ( ym - yb );
-    x0 = xb; x1 = xb;
-    tb = 1;
+    x1 = xb;
   }
-  color c;
-  c.red = 0; c.green = 0; c.blue = 0;
-  for ( int y = yb ; y <= yt ; y++ ) {
-    if ( y == ym ) d1 = ( xt - xm ) / ( yt - ym );
-    
-    if ( y%3 == 0 ) c.red = (c.red + 73) % 255;
-    else  if ( y%3 == 1 ) c.green = (c.green + 37) % 255;
-    else c.blue = (c.blue + 133) % 255;
-    
-    draw_line(x0, y, 0, x1, y, 0, s, zbuff, c); // fix for z values
-    x0 += d0;
-    x1 += d1;
+  x0 = xb;
+  int y;
+  for ( y = yb ; y < yt ; y++ ) {    
+    if ( y == ym ) {
+      d1 = ( xm - xt ) / ( ym - yt );
+      x1 = xm;
+    }
+    draw_line( x0, y, 0, x1, y, 0, s, zbuff, c );
+    x0 += d0; x1 += d1;
   }
 }
 
@@ -108,13 +113,14 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
 
   int point;
   double *normal;
+  color shapes;
+  shapes.red = 200; shapes.blue = 100; shapes.green = 80;
 
   for (point=0; point < polygons->lastcol-2; point+=3) {
 
     normal = calculate_normal(polygons, point);
 
     if ( normal[2] > 0 ) {
-      /*
       draw_line( polygons->m[0][point],
                  polygons->m[1][point],
                  polygons->m[2][point],
@@ -135,8 +141,8 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
                  polygons->m[0][point+2],
                  polygons->m[1][point+2],
                  polygons->m[2][point+2],
-                 s, zb, c);*/
-      scanline_convert(polygons, point, s, zb);
+                 s, zb, c);
+      scanline_convert(polygons, point, s, zb, shapes);
     }
   }
 }
