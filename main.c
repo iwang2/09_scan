@@ -10,6 +10,7 @@
 #include "parser.h"
 
 int main(int argc, char **argv) {
+  srand(time(NULL));
 
   screen s;
   zbuffer zb;

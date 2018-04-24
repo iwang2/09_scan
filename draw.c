@@ -113,13 +113,11 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
 
   int point;
   double *normal;
-  color shapes;
-  shapes.red = 200; shapes.blue = 100; shapes.green = 80;
-
+  color clr;
+  clr.red = 0; clr.blue = 0; clr.green = 0;
+  //srand(time(NULL));
   for (point=0; point < polygons->lastcol-2; point+=3) {
-
     normal = calculate_normal(polygons, point);
-
     if ( normal[2] > 0 ) {
       draw_line( polygons->m[0][point],
                  polygons->m[1][point],
@@ -142,7 +140,10 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
                  polygons->m[1][point+2],
                  polygons->m[2][point+2],
                  s, zb, c);
-      scanline_convert(polygons, point, s, zb, shapes);
+      clr.red = (clr.red + rand()) % 255;
+      clr.green = (clr.green + rand()) % 255;
+      clr.blue = (clr.blue + rand()) % 255;
+      scanline_convert(polygons, point, s, zb, clr);
     }
   }
 }
