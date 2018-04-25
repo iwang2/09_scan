@@ -571,7 +571,7 @@ void draw_line(int x0, int y0, double z0,
   int x, y, z, d, A, B;
   int
     dy_east, dy_northeast, dx_east, dx_northeast,
-    d_east, d_northeast, dz;
+    d_east, d_northeast, dzx, dzy;
   int loop_start, loop_end;
 
   //swap points if going right -> left
@@ -581,8 +581,11 @@ void draw_line(int x0, int y0, double z0,
     yt = y0; y0 = y1; y1 = yt;
     zt = z0; z0 = z1; z1 = zt;
   }
-  if ( z1 - z0 == 0 ) dz = 0;
-  else dz = ( x1 - x0 ) / (z1 = z0 );
+  if ( z1 - z0 == 0 ) { dzx = 0; dzy = 0; }
+  else {
+    dzx = ( x1 - x0 ) / ( z1 = z0 );
+    dzy = ( y1 - y0 ) / ( z1 - z0 );
+  }
 
   x = x0; y = y0; z = z0;
   
@@ -648,7 +651,8 @@ void draw_line(int x0, int y0, double z0,
       y+= dy_east;
       d+= d_east;
     }
-    z += dz;
+    if ( wide ) z += dzy;
+    else z += dzx;
     loop_start++;
   } //end drawing loop
   plot( s, zb, c, x1, y1, z );
