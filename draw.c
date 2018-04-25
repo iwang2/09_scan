@@ -62,7 +62,7 @@ void scanline_convert( struct matrix *points, int i,
   x0 = xb; z0 = zb;
   dz0 = ( xt - xb ) / ( zt - yb );
   if ( zm - zb != 0 ) {
-    d1 = ( xm - xb ) / ( zm - zb );
+    dz1 = ( xm - xb ) / ( zm - zb );
     z1 = zb;
   }
   int y;
@@ -72,7 +72,7 @@ void scanline_convert( struct matrix *points, int i,
       x1 = xm;
     }
     if ( z1 == (int)zm ) {
-      d1 = ( xm - xt ) / ( zm - zt );
+      dz1 = ( xm - xt ) / ( zm - zt );
       z1 = zm;
     }
     draw_line( x0, y, z0, x1, y, z1, s, zbuff, c );
@@ -128,7 +128,7 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
   for (point=0; point < polygons->lastcol-2; point+=3) {
     normal = calculate_normal(polygons, point);
     if ( normal[2] > 0 ) {
-      draw_line( polygons->m[0][point],
+      /*draw_line( polygons->m[0][point],
                  polygons->m[1][point],
                  polygons->m[2][point],
                  polygons->m[0][point+1],
@@ -148,7 +148,7 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
                  polygons->m[0][point+2],
                  polygons->m[1][point+2],
                  polygons->m[2][point+2],
-                 s, zb, c);
+                 s, zb, c);*/
       clr.red = (clr.red + rand()) % 255;
       clr.green = (clr.green + rand()) % 255;
       clr.blue = (clr.blue + rand()) % 255;
@@ -565,8 +565,6 @@ void draw_lines( struct matrix * points, screen s, zbuffer zb, color c) {
 }// end draw_lines
 
 
-
-
 void draw_line(int x0, int y0, double z0,
                int x1, int y1, double z1,
                screen s, zbuffer zb, color c) {
@@ -583,7 +581,6 @@ void draw_line(int x0, int y0, double z0,
     yt = y0; y0 = y1; y1 = yt;
     zt = z0; z0 = z1; z1 = zt;
   }
-
   if ( z1 - z0 == 0 ) dz = 0;
   else dz = ( x1 - x0 ) / (z1 = z0 );
 
@@ -636,7 +633,7 @@ void draw_line(int x0, int y0, double z0,
 
   while ( loop_start < loop_end ) {
 
-    plot( s, zb, c, x, y, 0);
+    plot( s, zb, c, x, y, z);
     if ( (wide && ((A > 0 && d > 0) ||
                    (A < 0 && d < 0)))
          ||
